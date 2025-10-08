@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Anniversary, beybe elly</title>
+    <style>
+        /*
+         * --- GLOBAL STYLES ---
+         */
+        :root {
+            --primary-color: #ff69b4; /* Hot Pink */
+            --secondary-color: #f7a0c1; /* Lighter Pink */
+            --accent-color: #fff0f5; /* Lightest Pink/White */
+            --text-color: #4a4a4a;
+            --duration: 0.6s;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--accent-color);
+            font-family: 'Georgia', serif;
+            color: var(--text-color);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center; /* Centers everything horizontally */
+            align-items: center;    /* Centers everything vertically */
+            text-align: center;
+            overflow: hidden;
+            padding: 20px;
+            position: relative;
+        }
+
+        /*
+         * --- BUTTON STYLES ---
+         */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .button-group button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px 30px; /* Enhanced size for better tap target on mobile */
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.3em; 
+            font-weight: bold;
+            transition: background 0.3s, transform 0.1s;
+            min-width: 140px; 
+        }
+
+        .button-group button:hover {
+            background: #e04b96;
+            transform: translateY(-2px);
+        }
+
+        /*
+         * --- SCENE STYLES ---
+         */
+        .scene {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity var(--duration) ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .scene.active {
+            opacity: 1;
+            z-index: 100;
+        }
+        
+        .scene:not(.active) {
+            pointer-events: none;
+        }
+
+        .text-prompt {
+            font-size: 2em; /* Larger, more readable prompt text */
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        /*
+         * --- SIDE IMAGE STYLES ---
+         * Adjust .scene-images to position images on the left and right sides with a slight rotation.
+         */
+        .scene-images {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+        .scene-images img {
+            max-width: 100px;
+            height: auto;
+        }
+        .scene-images img:first-child {
+            transform: rotate(-10deg);
+        }
+        .scene-images img:last-child {
+            transform: rotate(10deg);
+        }
+
+        /*
+         * --- ENVELOPE STYLES ---
+         */
+        .envelope-container {
+            width: 100%;
+            max-width: 350px; /* Larger envelope */
+            aspect-ratio: 7 / 5;
+            margin-top: 50px;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform var(--duration) ease-in-out;
+        }
+
+        .envelope {
+            width: 100%;
+            height: 100%;
+            background: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            aspect-ratio: 2 / 1;
+            background: var(--secondary-color);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top center;
+            transition: transform 1s ease-in-out;
+            z-index: 20;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .flap.open {
+            transform: rotateX(-180deg);
+        }
+
+        /*
+         * --- REVEALED CONTENT STYLES ---
+         */
+        .reveal-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 15px; /* Slightly more padding */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 1s, transform 1s;
+            z-index: 30; 
+            text-align: center;
+        }
+
+        .reveal-content.show {
+            opacity: 1;
+            transform: translateY(0%);
+        }
+
+        .image-content {
+            width: 90%;
+            height: 70%;
+            background-color: #f0f0f0;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .message-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        /*
+         * --- MISC STYLES ---
+         */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Hide the audio player */
+        audio#background-music {
+            display: none;
+        }
+    </style>
+    <!-- Include the canvas-confetti library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <!-- Background Music -->
+    <audio id="background-music" src="Gym Class Heroes - Take a look at my girlfriend (Cupid's Chokehold) (Lyrics).mp3" loop></audio>
+
+    <div class="scene active" id="scene1">
+        <p class="text-prompt" id="namePrompt"></p>
+        <div class="button-group">
+            <button onclick="checkName(true)">Yes</button>
+            <button onclick="checkName(false)">No</button>
+        </div>
+        <div class="scene-images">
+            <img src="download (3).png" alt="Left side image">
+            <img src="download (4).png" alt="Right side image">
+        </div>
+    </div>
+
+    <div class="scene" id="scene2">
+        <p class="text-prompt">Do you love Namie?</p>
+        <div class="button-group">
+            <button onclick="checkLove(true)">Yes, I do</button>
+            <button onclick="checkLove(false)">More than anything!</button>
+        </div>
+        <div class="scene-images">
+            <img src="download (5).png" alt="Left side image">
+            <img src="download (6).png" alt="Right side image">
+        </div>
+    </div>
+
+    <div class="scene" id="scene3">
+        <p class="text-prompt">A special message just for you...</p>
+        <div class="envelope-container" onclick="openEnvelope()">
+            <div class="envelope"></div>
+            <div class="flap" id="flap"></div>
+            <div class="reveal-content" id="revealContent">
+                <div class="image-content">
+                    <img src="qr.png" alt="QR Code" style="max-width:100%; height:auto;">
+                </div>
+                <p class="message-text">Scan this</p>
+            </div>
+        </div>
+        <div class="scene-images">
+            <img src="download (7).png" alt="Left side image">
+            <img src="download (8).png" alt="Right side image">
+        </div>
+    </div>
+
+    <script>
+        // --- CUSTOMIZATION VARIABLE ---
+        const personName = "Mellyzalyn C. Genciana"; // <<<--- 1. CUSTOMIZE THE NAME HERE
+        // ------------------------------
+
+        const namePrompt = document.getElementById('namePrompt');
+        namePrompt.innerHTML = `Are you ${personName}?`;
+
+        let currentScene = 1;
+
+        function showScene(sceneNumber) {
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            const nextScene = document.getElementById(`scene${sceneNumber}`);
+            if (nextScene) {
+                nextScene.classList.add('active');
+            }
+            currentScene = sceneNumber;
+        }
+
+        // --- SCENE 1 LOGIC ---
+        function checkName(isYes) {
+            if (isYes) {
+                showScene(2);
+            } else {
+                showScene(1);
+            }
+        }
+
+        // --- SCENE 2 LOGIC ---
+        function checkLove(isYes) {
+            showScene(3);
+        }
+
+        // --- Confetti function ---
+        function launchConfetti() {
+            // Launch burst of confetti for 1 second
+            const duration = 100000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 200, zIndex: 999 };
+
+            const interval = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // --- SCENE 3 LOGIC (Envelope) ---
+        let opened = false;
+        function openEnvelope() {
+            if (opened) return;
+            opened = true;
+
+            // Open the flap
+            document.getElementById('flap').classList.add('open');
+
+            // Trigger confetti when envelope opens
+            launchConfetti();
+
+            // Display the revealed content after a short delay
+            setTimeout(() => {
+                document.getElementById('revealContent').classList.add('show');
+            }, 500);
+        }
+
+        // --- Background Music Start & Persistence ---
+        document.addEventListener('DOMContentLoaded', () => {
+            showScene(1);
+            const music = document.getElementById('background-music');
+            let savedTime = localStorage.getItem('musicTime');
+            if (savedTime) {
+                music.currentTime = parseFloat(savedTime);
+            } else {
+                music.currentTime = 66;
+            }
+            music.play();
+
+            // Store current time frequently so the music can resume on a reload.
+            setInterval(() => {
+                localStorage.setItem('musicTime', music.currentTime);
+            }, 0);
+        });
+    </script>
+</body>
+</html>
